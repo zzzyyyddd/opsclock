@@ -49,3 +49,45 @@ export async function loadRingTokens(
     decryptSecret(record.encrypted)
   ) as RingTokenRecord;
 }
+
+const UNCLAIMED_RING_ACCOUNTS =
+  "opsclock:ring:unclaimed-accounts";
+
+export async function markRingAccountUnclaimed(
+  accountId: string
+): Promise<void> {
+  tokenKey(accountId);
+
+  await getRedis().sadd(
+    UNCLAIMED_RING_ACCOUNTS,
+    accountId
+  );
+}
+
+export async function listUnclaimedRingAccounts(): Promise<string[]> {
+  return getRedis().smembers(UNCLAIMED_RING_ACCOUNTS);
+}
+
+export async function markRingAccountClaimed(
+  accountId: string
+): Promise<void> {
+  tokenKey(accountId);
+
+  await getRedis().srem(
+    UNCLAIMED_RING_ACCOUNTS,
+    accountId
+  );
+}
+
+export async function isRingAccountUnclaimed(
+  accountId: string
+): Promise<boolean> {
+  tokenKey(accountId);
+
+  const result = await getRedis().sismember(
+    "opsclock:ring:unclaimed-accounts",
+    accountId
+  );
+
+  return result === 1;
+}

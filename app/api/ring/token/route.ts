@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveRingTokens } from "@/lib/ring-token-store";
+import {
+  saveRingTokens,
+  markRingAccountUnclaimed,
+} from "@/lib/ring-token-store";
 
 
 type RingTokens = {
@@ -131,7 +134,9 @@ export async function POST(request: NextRequest) {
       scope: tokens.scope,
     });
 
-    console.log("Ring tokens securely stored");
+    await markRingAccountUnclaimed(accountId);
+
+    console.log("Ring tokens securely stored as unclaimed");
 
     return NextResponse.json({
       received: true,
