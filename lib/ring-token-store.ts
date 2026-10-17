@@ -15,7 +15,7 @@ type StoredRingToken = {
 };
 
 function tokenKey(accountId: string): string {
-  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(accountId)) {
+  if (!/^[a-zA-Z0-9._-]{1,128}$/.test(accountId)) {
     throw new Error("Invalid account ID");
   }
 
