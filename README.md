@@ -1,36 +1,171 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpsClock
 
-## Getting Started
+**Software teams measure API latency. OpsClock measures physical latency.**
 
-First, run the development server:
+OpsClock is a physical operations observability application built for the Amazon Build, Ship, Shape 2026 hackathon.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+It measures the time between a vehicle arrival and an operator's acknowledgment, making loading dock response delays visible and measurable.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Live Application:** https://opsclock-rho.vercel.app
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## The Problem
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Software systems have tools to measure latency, uptime, and errors. Physical operations often lack similar visibility into how quickly people respond to real-world events.
 
-## Learn More
+When a vehicle arrives at a loading dock, teams need to know when it arrived, how long acknowledgment took, and whether the response met operational targets.
 
-To learn more about Next.js, take a look at the following resources:
+OpsClock turns that response time into an observable metric.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Live response timer for loading dock events
+- SLA warning at 8 minutes
+- SLA breach detection at 10 minutes
+- Operator acknowledgment workflow
+- Persistent event storage with Upstash Redis
+- Session-isolated interactive demo
+- Three selectable SLA simulation scenarios
+- Ring account-linking and OAuth integration
+- Ring webhook ingestion endpoint
 
-## Deploy on Vercel
+## SLA Logic
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Condition | Status |
+| --- | --- |
+| No event | IDLE |
+| Waiting less than 8 minutes | AWAITING_RESPONSE |
+| Waiting 8 to under 10 minutes | AT_RISK |
+| Acknowledged within 10 minutes | SLA_MET |
+| Waiting at least 10 minutes | SLA_BREACHED |
+| Acknowledged after 10 minutes | SLA_BREACHED |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+A late acknowledgment never converts a breached event into a successful one.
+
+## Interactive Demo
+
+Visit **https://opsclock-rho.vercel.app**
+
+The public demo works without Ring hardware.
+
+1. Click **Reset Demo** to clear the current simulated event.
+2. Select **Normal Arrival** to create a new vehicle arrival.
+3. Click **Acknowledge Delivery** to record the response.
+4. Reset and select **At Risk** to simulate 9 minutes of waiting.
+5. Reset and select **SLA Breached** to simulate 11 minutes of waiting.
+6. Acknowledge the breached event and verify that its status remains **SLA BREACHED**.
+
+The demo uses simulated timestamps with the application's real SLA calculation logic. Simulated events are clearly labeled.
+
+## Ring Integration
+
+OpsClock includes the following implemented integration components:
+
+- Ring OAuth token exchange
+- Encrypted token persistence
+- Operator authentication
+- Ring account-linking flow
+- Access-token refresh support
+- Webhook endpoint
+- Event processing infrastructure
+
+### Verified Integration Status
+
+The Ring account-linking flow was successfully completed through the Ring App Store.
+
+However, the linked account has no eligible connected device locations. Therefore, real Ring device event delivery has not been verified.
+
+The public interactive demo uses simulated vehicle arrivals, not live Ring camera detections.
+
+## Architecture
+
+    Ring Account Authorization
+                |
+                v
+        OAuth Token Exchange
+                |
+                v
+       Encrypted Token Storage
+                |
+                v
+         Ring Webhook Endpoint
+                |
+                v
+           Event Processing
+                |
+                v
+             SLA Engine
+
+    Interactive Demo Session
+                |
+                v
+       Simulated Vehicle Event
+                |
+                v
+           Upstash Redis
+                |
+                v
+             SLA Engine
+                |
+                v
+        Operations Dashboard
+                |
+                v
+       Operator Acknowledgment
+
+The interactive demo stores events separately from general operations events.
+
+## Technology Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 16, React 19 |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Database | Upstash Redis |
+| Hosting | Vercel |
+| Integration | Ring API |
+
+## Production Testing
+
+The following scenarios have been manually verified on the public deployment:
+
+| Test | Result |
+| --- | --- |
+| Normal arrival | Passed |
+| At-risk warning | Passed |
+| Acknowledgment within SLA | Passed |
+| SLA breach detection | Passed |
+| Acknowledgment after breach | Passed |
+| Response timer stops after acknowledgment | Passed |
+| Reset and scenario switching | Passed |
+
+These tests validate the interactive SLA workflow. They do not establish that physical Ring device events have been received.
+
+## Local Development
+
+Clone the repository:
+
+    git clone https://github.com/zzzyyyddd/opsclock.git
+    cd opsclock
+    npm install
+
+Configure the required credentials in `.env.local`, including Upstash Redis settings. Ring credentials are needed for Ring-specific integration functionality.
+
+Start the development server:
+
+    npm run dev
+
+Open http://localhost:3000.
+
+Never commit credentials, access tokens, or `.env.local`.
+
+## Project Status
+
+OpsClock is a deployed hackathon prototype with a working interactive SLA dashboard, persistent demo storage, operator acknowledgments, and verified Ring account linking.
+
+Physical Ring-device event delivery remains unverified because no eligible device location is connected.
+
+## Links
+
+- Live Demo: https://opsclock-rho.vercel.app
+- GitHub: https://github.com/zzzyyyddd/opsclock
