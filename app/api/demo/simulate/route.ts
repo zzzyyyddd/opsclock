@@ -48,11 +48,26 @@ export async function POST(request: Request) {
       );
     }
 
+    const body = await request.json().catch(() => ({}));
+
+    const scenario = body?.scenario ?? "normal";
+
+    if (!["normal", "at_risk", "breached"].includes(scenario)) {
+      return NextResponse.json(
+        { error: "invalid_demo_scenario" },
+        { status: 400 }
+      );
+    }
+
+    const simulatedWaitMinutes =
+      scenario === "at_risk" ? 9 :
+      scenario === "breached" ? 11 : 0;
+
     const event: OpsEvent = {
       id: randomUUID(),
       source: "demo",
       kind: "VEHICLE_ARRIVAL",
-      arrivalAt: Date.now(),
+      arrivalAt: Date.now() - simulatedWaitMinutes * 60_000,
       acknowledgedAt: null,
     };
 
