@@ -1,8 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getOpsEventSummary } from "@/lib/ops-events";
+import {
+  OPERATOR_COOKIE,
+  verifyOperatorSession,
+} from "@/lib/operator-session";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const token = request.cookies.get(OPERATOR_COOKIE)?.value;
+
+    const authenticated = await verifyOperatorSession(token);
+
+    if (!authenticated) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        {
+          status: 401,
+          headers: { "Cache-Control": "no-store" },
+        }
+      );
+    }
+
     const event = await getOpsEventSummary();
 
     return NextResponse.json(
