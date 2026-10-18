@@ -203,3 +203,16 @@ Physical Ring-device event delivery remains unverified because no eligible devic
 
 - Live Demo: https://opsclock-rho.vercel.app
 - GitHub: https://github.com/zzzyyyddd/opsclock
+
+## Operator Console
+
+The password-protected Operator Console provides a live SLA monitoring dashboard for authorized operators.
+
+- View the latest arrival event and its source
+- Monitor SLA status and response time
+- Acknowledge pending events
+- Distinguish Ring events from demo events
+
+![OpsClock Operator Console](docs/images/opsclock-operator-console.png)
+
+**Ring integration status:** OAuth account linking and signed webhook processing are implemented and tested with simulated payloads. Physical Ring device event delivery has not yet been verified.
