@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { verifyRingWebhookSignature } from "@/lib/ring-webhook-security";
 import { saveRingActivity } from "@/lib/ring-activity";
+import { getRingClaimState } from "@/lib/ring-claim-state";
+import { createOpsEvent } from "@/lib/ops-events";
 
 type RingWebhookPayload = {
   meta: {
     version: string;
     time: string;
     request_id: string;
+    account_id: string;
   };
   data: {
     id: string;
@@ -37,6 +40,8 @@ function isRingWebhookPayload(
     typeof meta.version === "string" &&
     typeof meta.time === "string" &&
     typeof meta.request_id === "string" &&
+    typeof meta.account_id === "string" &&
+    /^[A-Za-z0-9._-]{1,128}$/.test(meta.account_id) &&
     !!data &&
     typeof data.id === "string" &&
     typeof data.type === "string" &&
@@ -50,7 +55,20 @@ function isRingWebhookPayload(
   );
 }
 
-export async function POST(request: Request) {
+export type RingWebhookDependencies = {
+  getClaim: typeof getRingClaimState;
+  saveActivity: typeof saveRingActivity;
+  createEvent: typeof createOpsEvent;
+};
+
+export async function handleRingWebhook(
+  request: Request,
+  deps: RingWebhookDependencies = {
+    getClaim: getRingClaimState,
+    saveActivity: saveRingActivity,
+    createEvent: createOpsEvent,
+  }
+) {
   try {
     const rawBody = Buffer.from(await request.arrayBuffer());
 
@@ -103,14 +121,45 @@ export async function POST(request: Request) {
         ? rawTimestamp
         : Date.parse(rawTimestamp);
 
-    if (!Number.isFinite(detectedAt)) {
+    const now = Date.now();
+    const maxPastAge = 24 * 60 * 60 * 1000;
+    const maxFutureSkew = 5 * 60 * 1000;
+
+    if (
+      !Number.isFinite(detectedAt) ||
+      detectedAt < now - maxPastAge ||
+      detectedAt > now + maxFutureSkew
+    ) {
       return NextResponse.json(
         { error: "invalid_timestamp" },
         { status: 400 }
       );
     }
 
-    const result = await saveRingActivity({
+    const claim = await deps.getClaim(body.meta.account_id);
+
+    if (claim?.stage !== "completed") {
+      return NextResponse.json(
+        { error: "ring_account_not_linked" },
+        { status: 403 }
+      );
+    }
+
+    const isVehicle =
+      eventType === "motion_detected" &&
+      body.data.attributes.sub_type?.toLowerCase() === "vehicle";
+
+    if (isVehicle) {
+      await deps.createEvent({
+        id: `ring:${body.meta.account_id}:${body.data.id}`,
+        source: "ring",
+        accountId: body.meta.account_id,
+        kind: "VEHICLE_ARRIVAL",
+        arrivalAt: detectedAt,
+      });
+    }
+
+    const result = await deps.saveActivity({
       id: body.data.id,
       requestId: body.meta.request_id,
       eventType,
@@ -134,4 +183,9 @@ export async function POST(request: Request) {
       { status: 503 }
     );
   }
+}
+
+
+export async function POST(request: Request) {
+  return handleRingWebhook(request);
 }
