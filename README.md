@@ -90,6 +90,24 @@ The public demo works without Ring hardware.
 
 The demo uses simulated timestamps with the application's real SLA calculation logic. Simulated events are clearly labeled.
 
+## Operator Console
+
+**Live Operator Console:** https://opsclock-rho.vercel.app/operator
+
+The console requires operator authentication. For immediate hands-on testing without credentials, use the [Public Interactive Demo](https://opsclock-rho.vercel.app/).
+
+
+The password-protected Operator Console provides a live SLA monitoring dashboard for authorized operators.
+
+- View the latest arrival event and its source
+- Monitor SLA status and response time
+- Acknowledge pending events
+- Distinguish Ring events from demo events
+
+![OpsClock Operator Console](docs/images/opsclock-operator-console.png)
+
+**Ring integration status:** OAuth account linking and signed webhook processing are implemented and tested with simulated payloads. Physical Ring device event delivery has not yet been verified.
+
 ## Ring Integration
 
 OpsClock includes the following implemented integration components:
@@ -175,6 +193,22 @@ The following scenarios have been manually verified on the public deployment:
 
 These tests validate the interactive SLA workflow. They do not establish that physical Ring device events have been received.
 
+
+### Automated Tests
+
+All 6 automated tests passed:
+
+- SLA acknowledgment within 10 minutes
+- SLA acknowledgment after 10 minutes
+- At-risk warning before the SLA deadline
+- SLA breach after 10 minutes
+- Signed Ring vehicle webhook creates one unique SLA event
+- Invalid Ring webhook signatures are rejected
+
+Run locally: `npx tsx --test tests/*.test.ts`
+
+These tests use simulated events and do not verify physical Ring device delivery.
+
 ## Local Development
 
 Clone the repository:
@@ -203,21 +237,3 @@ Physical Ring-device event delivery remains unverified because no eligible devic
 
 - Live Demo: https://opsclock-rho.vercel.app
 - GitHub: https://github.com/zzzyyyddd/opsclock
-
-## Operator Console
-
-**Live Operator Console:** https://opsclock-rho.vercel.app/operator
-
-The console requires operator authentication. For immediate hands-on testing without credentials, use the [Public Interactive Demo](https://opsclock-rho.vercel.app/).
-
-
-The password-protected Operator Console provides a live SLA monitoring dashboard for authorized operators.
-
-- View the latest arrival event and its source
-- Monitor SLA status and response time
-- Acknowledge pending events
-- Distinguish Ring events from demo events
-
-![OpsClock Operator Console](docs/images/opsclock-operator-console.png)
-
-**Ring integration status:** OAuth account linking and signed webhook processing are implemented and tested with simulated payloads. Physical Ring device event delivery has not yet been verified.
