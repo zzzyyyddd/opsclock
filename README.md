@@ -206,6 +206,11 @@ Physical Ring-device event delivery remains unverified because no eligible devic
 
 ## Operator Console
 
+**Live Operator Console:** https://opsclock-rho.vercel.app/operator
+
+The console requires operator authentication. For immediate hands-on testing without credentials, use the [Public Interactive Demo](https://opsclock-rho.vercel.app/).
+
+
 The password-protected Operator Console provides a live SLA monitoring dashboard for authorized operators.
 
 - View the latest arrival event and its source
