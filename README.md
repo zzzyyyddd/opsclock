@@ -8,6 +8,40 @@ It measures the time between a vehicle arrival and an operator's acknowledgment,
 
 **Live Application:** https://opsclock-rho.vercel.app
 
+## Product Screenshots
+
+OpsClock turns physical arrival events into measurable operational response times.
+
+### 1. Operations Dashboard
+
+![OpsClock Operations Dashboard](docs/images/01-opsclock-dashboard.png)
+
+### 2. Normal Arrival — Awaiting Response
+
+A delivery arrives and the response timer starts.
+
+![Normal Arrival](docs/images/02-normal-arrival.png)
+
+### 3. At Risk — Approaching SLA Deadline
+
+The dashboard warns operators as the response time approaches the 10-minute SLA.
+
+![At Risk](docs/images/03-at-risk.png)
+
+### 4. SLA Breached — Response Overdue
+
+An unacknowledged delivery exceeds the SLA threshold.
+
+![SLA Breached](docs/images/04-sla-breached.png)
+
+### 5. SLA Met — Acknowledged on Time
+
+The operator acknowledges the delivery before the SLA deadline, stopping the response timer.
+
+![SLA Met](docs/images/05-sla-met.png)
+
+---
+
 ## The Problem
 
 Software systems have tools to measure latency, uptime, and errors. Physical operations often lack similar visibility into how quickly people respond to real-world events.
