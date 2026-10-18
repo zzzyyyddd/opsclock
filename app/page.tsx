@@ -197,10 +197,25 @@ export default function Home() {
         </header>
 
         <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-4 text-sm">
-          <p className="font-medium">Persistent Operations Feed</p>
-          <p className="mt-2 text-zinc-400">
-            Storage: {storageState.toUpperCase()}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-medium">Operations Activity</p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Latest recorded event and operational SLA status
+              </p>
+            </div>
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                storageState === "connected"
+                  ? "border-green-900 bg-green-950/30 text-green-300"
+                  : storageState === "error"
+                    ? "border-red-900 bg-red-950/30 text-red-300"
+                    : "border-zinc-700 text-zinc-400"
+              }`}
+            >
+              Storage: {storageState.toUpperCase()}
+            </span>
+          </div>
           <p className="mt-1 text-zinc-400">
             {storageState === "error"
               ? "Unable to retrieve persistent event data"
@@ -214,7 +229,7 @@ export default function Home() {
 
         <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
-            <div className="mb-10 flex items-start justify-between">
+            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
                   Loading Dock
@@ -222,14 +237,26 @@ export default function Home() {
                 <h2 className="mt-2 text-3xl font-semibold">Dock A</h2>
               </div>
 
-              <div className="rounded-lg border border-zinc-700 px-4 py-2 text-sm">
+              <div
+                className={`rounded-lg border px-4 py-2 text-sm font-semibold ${
+                  status === "SLA_BREACHED"
+                    ? "border-red-800 bg-red-950/40 text-red-300"
+                    : status === "AT_RISK"
+                      ? "border-amber-700 bg-amber-950/40 text-amber-300"
+                      : status === "SLA_MET"
+                        ? "border-green-800 bg-green-950/40 text-green-300"
+                        : status === "AWAITING_RESPONSE"
+                          ? "border-blue-800 bg-blue-950/30 text-blue-300"
+                          : "border-zinc-700 text-zinc-400"
+                }`}
+              >
                 {status.replaceAll("_", " ")}
               </div>
             </div>
 
-            <div className="py-8 text-center">
+            <div className="py-6 text-center">
               <p className="mb-3 text-sm text-zinc-500">Response time</p>
-              <div className="font-mono text-7xl font-semibold tracking-tight">
+              <div className="font-mono text-6xl font-semibold tracking-tight sm:text-7xl">
                 {formatDuration(elapsed)}
               </div>
               <p className="mt-4 text-sm text-zinc-500">
@@ -237,13 +264,24 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="mt-10 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <button
                 onClick={acknowledgeDelivery}
                 disabled={!storedEvent || storedEvent.acknowledgedAt !== null}
-                className="rounded-xl bg-white px-5 py-4 font-medium text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"
+                className={`flex items-center justify-center gap-2 rounded-xl px-5 py-4 font-medium transition ${
+                  storedEvent?.acknowledgedAt != null
+                    ? "cursor-not-allowed border border-green-900 bg-green-950/30 text-green-300"
+                    : "bg-white text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"
+                }`}
               >
-                Acknowledge Delivery
+                {storedEvent?.acknowledgedAt != null ? (
+                  <>
+                    <span aria-hidden="true">✓</span>
+                    Acknowledged
+                  </>
+                ) : (
+                  "Acknowledge Delivery"
+                )}
               </button>
 
               <button
